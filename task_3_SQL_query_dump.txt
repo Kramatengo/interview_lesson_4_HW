@@ -1,0 +1,27 @@
+-- By Alexander Kramarenko
+-- Interiew Preparation Course
+-- Lesson 4 HW
+-- Task 3
+CREATE VIEW `task3` AS
+SELECT DISTINCT 
+tbl_schedule.movie_id AS 'Id фильма',
+tbl_movie_info.title AS 'Название фильма',
+(SELECT count(tbl_ticket_booking.id)) AS 'Зрители',
+(SELECT  sum(tbl_ticket_booking.count) / count(distinct tbl_ticket_booking.schedule_id) ) AS 'Среднее за сеанс',
+(SELECT sum(tbl_ticket_price.price) ) AS 'Сумма сборов'
+FROM tbl_schedule, tbl_movie_info,  tbl_ticket_booking, tbl_ticket_price
+WHERE tbl_schedule.id = tbl_ticket_booking.schedule_id
+AND tbl_schedule.movie_id = tbl_movie_info.id
+AND tbl_ticket_booking.ticket_price_id = tbl_ticket_price.id
+group by tbl_schedule.movie_id
+UNION 
+SELECT '',
+'Итого', 
+(SELECT count(tbl_ticket_booking.id)) AS 'Зрители',
+(SELECT  sum(tbl_ticket_booking.count) / count(distinct tbl_ticket_booking.schedule_id) ) AS 'Среднее за сеанс',
+(SELECT sum(tbl_ticket_price.price) ) AS 'Сумма сборов'
+FROM tbl_ticket_booking, tbl_ticket_price, tbl_schedule, tbl_movie_info
+WHERE tbl_schedule.id = tbl_ticket_booking.schedule_id
+AND tbl_schedule.movie_id = tbl_movie_info.id
+AND tbl_ticket_booking.ticket_price_id = tbl_ticket_price.id
+;
