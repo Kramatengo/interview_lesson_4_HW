@@ -1,0 +1,445 @@
+-- MySQL Workbench Forward Engineering
+
+-- By Alexander Kramarenko
+
+-- Interview Preparation Course 
+
+-- Lesson 4
+
+-- Total DB creation dump
+
+SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
+SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
+SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';
+
+-- -----------------------------------------------------
+-- Schema cinema
+-- -----------------------------------------------------
+
+-- -----------------------------------------------------
+-- Schema cinema
+-- -----------------------------------------------------
+CREATE SCHEMA IF NOT EXISTS `cinema` DEFAULT CHARACTER SET utf8 ;
+USE `cinema` ;
+
+-- -----------------------------------------------------
+-- Table `cinema`.`tbl_normalized_duration`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `cinema`.`tbl_normalized_duration` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `duration` TIME NOT NULL,
+  PRIMARY KEY (`id`))
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `cinema`.`tbl_movie_info`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `cinema`.`tbl_movie_info` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `title` VARCHAR(45) NOT NULL,
+  `normalized_duration_id` INT NOT NULL,
+  PRIMARY KEY (`id`),
+  CONSTRAINT `fk_normalized_duration`
+    FOREIGN KEY (`normalized_duration_id`)
+    REFERENCES `cinema`.`tbl_normalized_duration` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+CREATE INDEX `fk_normalized_duration_idx` ON `cinema`.`tbl_movie_info` (`normalized_duration_id` ASC) VISIBLE;
+
+
+-- -----------------------------------------------------
+-- Table `cinema`.`tbl_schedule`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `cinema`.`tbl_schedule` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `movie_id` INT NOT NULL,
+  `date` DATE NOT NULL,
+  `time_start` TIME NOT NULL,
+  `count` INT NOT NULL,
+  PRIMARY KEY (`id`),
+  CONSTRAINT `fk_movie_id`
+    FOREIGN KEY (`movie_id`)
+    REFERENCES `cinema`.`tbl_movie_info` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+CREATE INDEX `fk_movie_id_idx` ON `cinema`.`tbl_schedule` (`movie_id` ASC) VISIBLE;
+
+
+-- -----------------------------------------------------
+-- Table `cinema`.`tbl_day_of_week`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `cinema`.`tbl_day_of_week` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `title` VARCHAR(45) NOT NULL,
+  PRIMARY KEY (`id`))
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `cinema`.`tbl_time_zone`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `cinema`.`tbl_time_zone` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `start` TIME NOT NULL,
+  `end` TIME NOT NULL,
+  PRIMARY KEY (`id`))
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `cinema`.`tbl_ticket_price`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `cinema`.`tbl_ticket_price` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `time_zone_id` INT NOT NULL,
+  `day_of_week_id` INT NOT NULL,
+  `price` INT NOT NULL,
+  PRIMARY KEY (`id`),
+  CONSTRAINT `fk_day_of_week`
+    FOREIGN KEY (`day_of_week_id`)
+    REFERENCES `cinema`.`tbl_day_of_week` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_time_zone`
+    FOREIGN KEY (`time_zone_id`)
+    REFERENCES `cinema`.`tbl_time_zone` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+CREATE INDEX `fk_day_of_week_idx` ON `cinema`.`tbl_ticket_price` (`day_of_week_id` ASC) INVISIBLE;
+
+CREATE INDEX `fk_time_zone_idx` ON `cinema`.`tbl_ticket_price` (`time_zone_id` ASC) VISIBLE;
+
+
+-- -----------------------------------------------------
+-- Table `cinema`.`tbl_ticket_booking`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `cinema`.`tbl_ticket_booking` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `schedule_id` INT NOT NULL,
+  `ticket_price_id` INT NOT NULL,
+  `count` INT NOT NULL,
+  PRIMARY KEY (`id`),
+  CONSTRAINT `fk_schedule_id`
+    FOREIGN KEY (`schedule_id`)
+    REFERENCES `cinema`.`tbl_schedule` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_ticket_price_id`
+    FOREIGN KEY (`ticket_price_id`)
+    REFERENCES `cinema`.`tbl_ticket_price` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+CREATE UNIQUE INDEX `id_UNIQUE` ON `cinema`.`tbl_ticket_booking` (`id` ASC) VISIBLE;
+
+CREATE INDEX `fk_schedule_id_idx` ON `cinema`.`tbl_ticket_booking` (`schedule_id` ASC) VISIBLE;
+
+CREATE INDEX `fk_ticket_price_id_idx` ON `cinema`.`tbl_ticket_booking` (`ticket_price_id` ASC) VISIBLE;
+
+USE `cinema` ;
+
+-- -----------------------------------------------------
+-- Placeholder table for view `cinema`.`task1`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `cinema`.`task1` (`'Фильм 1'` INT, `'Время начала 1'` INT, `'Длительность 1'` INT, `'Фильм 2'` INT, `'Время начала 2'` INT, `'Длительность 2'` INT);
+
+-- -----------------------------------------------------
+-- Placeholder table for view `cinema`.`task2`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `cinema`.`task2` (`'Фильм 1'` INT, `'Время начала'` INT, `'Длительность'` INT, `'Фильм 2'` INT, `'Время начала 2'` INT, `'Длительность 2'` INT, `'Длительность перерыва'` INT);
+
+-- -----------------------------------------------------
+-- Placeholder table for view `cinema`.`task3`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `cinema`.`task3` (`'Id фильма'` INT, `'Название фильма'` INT, `'Зрители'` INT, `'Среднее за сеанс'` INT, `'Сумма сборов'` INT);
+
+-- -----------------------------------------------------
+-- Placeholder table for view `cinema`.`task4`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `cinema`.`task4` (`'Зона начало'` INT, `'Зона конец'` INT, `'Зрители'` INT, `'Сумма сборов'` INT);
+
+-- -----------------------------------------------------
+-- View `cinema`.`task1`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `cinema`.`task1`;
+USE `cinema`;
+-- By Alexander Kramarenko
+-- Interiew Preparation Course
+-- Lesson 4 HW
+-- Task 1
+CREATE  OR REPLACE VIEW `task1` AS
+SELECT m.title AS 'Фильм 1', ms.time_start AS 'Время начала 1', nd.duration AS 'Длительность 1', 
+m2.title AS 'Фильм 2', ms2.time_start AS 'Время начала 2', nd2.duration  AS 'Длительность 2'
+FROM tbl_schedule ms 
+LEFT JOIN tbl_movie_info m ON ms.movie_id = m.id
+LEFT JOIN tbl_normalized_duration nd ON nd.id = m.normalized_duration_id,
+		   tbl_schedule ms2
+LEFT JOIN tbl_movie_info m2 ON ms2.movie_id = m2.id
+LEFT JOIN tbl_normalized_duration nd2 ON nd2.id = m2.normalized_duration_id
+WHERE ms.id != ms2.id
+AND ms2.time_start BETWEEN ms.time_start AND ms.time_start + nd.duration
+ORDER BY ms.time_start + nd.duration - ms2.time_start;
+
+-- -----------------------------------------------------
+-- View `cinema`.`task2`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `cinema`.`task2`;
+USE `cinema`;
+-- By Alexander Kramarenko
+-- Interiew Preparation Course
+-- Lesson 4 HW
+-- Task 2
+CREATE  OR REPLACE VIEW `task2` AS
+SELECT m.title AS 'Фильм 1', ms.time_start AS 'Время начала', nd.duration AS 'Длительность', 
+m2.title AS 'Фильм 2', ms2.time_start AS 'Время начала 2', nd2.duration  AS 'Длительность 2',
+time(ms2.time_start - ms.time_start - nd.duration) AS 'Длительность перерыва'
+FROM tbl_schedule ms 
+LEFT JOIN tbl_movie_info m ON ms.movie_id = m.id
+LEFT JOIN tbl_normalized_duration nd ON nd.id = m.normalized_duration_id,
+            tbl_schedule ms2
+LEFT JOIN tbl_movie_info m2 ON ms2.movie_id = m2.id
+LEFT JOIN tbl_normalized_duration nd2 ON nd2.id = m2.normalized_duration_id
+WHERE ms.id != ms2.id
+AND time(ms2.time_start - ms.time_start - nd.duration) > '00:30:00'
+ORDER BY time(ms2.time_start - ms.time_start - nd.duration) DESC;
+
+-- -----------------------------------------------------
+-- View `cinema`.`task3`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `cinema`.`task3`;
+USE `cinema`;
+-- By Alexander Kramarenko
+-- Interiew Preparation Course
+-- Lesson 4 HW
+-- Task 3
+CREATE  OR REPLACE VIEW `task3` AS
+SELECT DISTINCT 
+tbl_schedule.movie_id AS 'Id фильма',
+tbl_movie_info.title AS 'Название фильма',
+(SELECT count(tbl_ticket_booking.id)) AS 'Зрители',
+(SELECT  sum(tbl_ticket_booking.count) / count(distinct tbl_ticket_booking.schedule_id) ) AS 'Среднее за сеанс',
+(SELECT sum(tbl_ticket_price.price) ) AS 'Сумма сборов'
+FROM tbl_schedule, tbl_movie_info,  tbl_ticket_booking, tbl_ticket_price
+WHERE tbl_schedule.id = tbl_ticket_booking.schedule_id
+AND tbl_schedule.movie_id = tbl_movie_info.id
+AND tbl_ticket_booking.ticket_price_id = tbl_ticket_price.id
+group by tbl_schedule.movie_id
+UNION 
+SELECT '',
+'Итого', 
+(SELECT count(tbl_ticket_booking.id)) AS 'Зрители',
+(SELECT  sum(tbl_ticket_booking.count) / count(distinct tbl_ticket_booking.schedule_id) ) AS 'Среднее за сеанс',
+(SELECT sum(tbl_ticket_price.price) ) AS 'Сумма сборов'
+FROM tbl_ticket_booking, tbl_ticket_price, tbl_schedule, tbl_movie_info
+WHERE tbl_schedule.id = tbl_ticket_booking.schedule_id
+AND tbl_schedule.movie_id = tbl_movie_info.id
+AND tbl_ticket_booking.ticket_price_id = tbl_ticket_price.id
+;
+
+-- -----------------------------------------------------
+-- View `cinema`.`task4`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `cinema`.`task4`;
+USE `cinema`;
+-- By Alexander Kramarenko
+-- Interiew Preparation Course
+-- Lesson 4 HW
+-- Task 4
+CREATE  OR REPLACE VIEW `task4` AS
+SELECT DISTINCT 
+tbl_time_zone.start AS 'Зона начало',
+tbl_time_zone.end AS 'Зона конец',
+(SELECT count(tbl_ticket_booking.id)) AS 'Зрители',
+(SELECT sum(tbl_ticket_price.price) ) AS 'Сумма сборов'
+FROM tbl_schedule, tbl_movie_info,  tbl_ticket_booking, tbl_ticket_price, tbl_time_zone
+WHERE tbl_schedule.id = tbl_ticket_booking.schedule_id
+AND tbl_schedule.movie_id = tbl_movie_info.id
+AND tbl_ticket_booking.ticket_price_id = tbl_ticket_price.id
+AND tbl_time_zone.id = tbl_ticket_price.time_zone_id
+group by tbl_time_zone.id;
+
+SET SQL_MODE=@OLD_SQL_MODE;
+SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
+SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
+
+-- -----------------------------------------------------
+-- Data for table `cinema`.`tbl_normalized_duration`
+-- -----------------------------------------------------
+START TRANSACTION;
+USE `cinema`;
+INSERT INTO `cinema`.`tbl_normalized_duration` (`id`, `duration`) VALUES (1, '01:00:00');
+INSERT INTO `cinema`.`tbl_normalized_duration` (`id`, `duration`) VALUES (2, '01:30:00');
+INSERT INTO `cinema`.`tbl_normalized_duration` (`id`, `duration`) VALUES (3, '02:00:00');
+
+COMMIT;
+
+
+-- -----------------------------------------------------
+-- Data for table `cinema`.`tbl_movie_info`
+-- -----------------------------------------------------
+START TRANSACTION;
+USE `cinema`;
+INSERT INTO `cinema`.`tbl_movie_info` (`id`, `title`, `normalized_duration_id`) VALUES (1, 'Total Recall', 2);
+INSERT INTO `cinema`.`tbl_movie_info` (`id`, `title`, `normalized_duration_id`) VALUES (2, 'The Water World', 3);
+INSERT INTO `cinema`.`tbl_movie_info` (`id`, `title`, `normalized_duration_id`) VALUES (3, 'The Phoenix Flight', 3);
+INSERT INTO `cinema`.`tbl_movie_info` (`id`, `title`, `normalized_duration_id`) VALUES (4, 'The Thing', 2);
+
+COMMIT;
+
+
+-- -----------------------------------------------------
+-- Data for table `cinema`.`tbl_schedule`
+-- -----------------------------------------------------
+START TRANSACTION;
+USE `cinema`;
+INSERT INTO `cinema`.`tbl_schedule` (`id`, `movie_id`, `date`, `time_start`, `count`) VALUES (1, 1, '2022-01-24', '09:00:00', 1);
+INSERT INTO `cinema`.`tbl_schedule` (`id`, `movie_id`, `date`, `time_start`, `count`) VALUES (2, 2, '2022-01-24', '10:00:00', 1);
+INSERT INTO `cinema`.`tbl_schedule` (`id`, `movie_id`, `date`, `time_start`, `count`) VALUES (3, 3, '2022-01-24', '12:00:00', 1);
+INSERT INTO `cinema`.`tbl_schedule` (`id`, `movie_id`, `date`, `time_start`, `count`) VALUES (4, 4, '2022-01-24', '15:00:00', 1);
+INSERT INTO `cinema`.`tbl_schedule` (`id`, `movie_id`, `date`, `time_start`, `count`) VALUES (5, 1, '2022-01-24', '18:00:00', 1);
+INSERT INTO `cinema`.`tbl_schedule` (`id`, `movie_id`, `date`, `time_start`, `count`) VALUES (6, 2, '2022-01-24', '19:00:00', 1);
+INSERT INTO `cinema`.`tbl_schedule` (`id`, `movie_id`, `date`, `time_start`, `count`) VALUES (7, 3, '2022-01-24', '21:00:00', 1);
+INSERT INTO `cinema`.`tbl_schedule` (`id`, `movie_id`, `date`, `time_start`, `count`) VALUES (8, 4, '2022-01-24', '23:00:00', 1);
+
+COMMIT;
+
+
+-- -----------------------------------------------------
+-- Data for table `cinema`.`tbl_day_of_week`
+-- -----------------------------------------------------
+START TRANSACTION;
+USE `cinema`;
+INSERT INTO `cinema`.`tbl_day_of_week` (`id`, `title`) VALUES (1, 'Mon');
+INSERT INTO `cinema`.`tbl_day_of_week` (`id`, `title`) VALUES (2, 'Tue');
+INSERT INTO `cinema`.`tbl_day_of_week` (`id`, `title`) VALUES (3, 'Wed');
+INSERT INTO `cinema`.`tbl_day_of_week` (`id`, `title`) VALUES (4, 'Thu');
+INSERT INTO `cinema`.`tbl_day_of_week` (`id`, `title`) VALUES (5, 'Fri');
+INSERT INTO `cinema`.`tbl_day_of_week` (`id`, `title`) VALUES (6, 'Sat');
+INSERT INTO `cinema`.`tbl_day_of_week` (`id`, `title`) VALUES (7, 'Sun');
+INSERT INTO `cinema`.`tbl_day_of_week` (`id`, `title`) VALUES (8, 'Sat+Sun');
+INSERT INTO `cinema`.`tbl_day_of_week` (`id`, `title`) VALUES (9, 'Mon-Fri');
+INSERT INTO `cinema`.`tbl_day_of_week` (`id`, `title`) VALUES (10, 'Mon-Sun');
+
+COMMIT;
+
+
+-- -----------------------------------------------------
+-- Data for table `cinema`.`tbl_time_zone`
+-- -----------------------------------------------------
+START TRANSACTION;
+USE `cinema`;
+INSERT INTO `cinema`.`tbl_time_zone` (`id`, `start`, `end`) VALUES (1, '9:00', '14:59');
+INSERT INTO `cinema`.`tbl_time_zone` (`id`, `start`, `end`) VALUES (2, '15:00', '17:59');
+INSERT INTO `cinema`.`tbl_time_zone` (`id`, `start`, `end`) VALUES (3, '18:00', '20:59');
+INSERT INTO `cinema`.`tbl_time_zone` (`id`, `start`, `end`) VALUES (4, '21:00', '23:59');
+
+COMMIT;
+
+
+-- -----------------------------------------------------
+-- Data for table `cinema`.`tbl_ticket_price`
+-- -----------------------------------------------------
+START TRANSACTION;
+USE `cinema`;
+INSERT INTO `cinema`.`tbl_ticket_price` (`id`, `time_zone_id`, `day_of_week_id`, `price`) VALUES (1, 1, 10, 1000);
+INSERT INTO `cinema`.`tbl_ticket_price` (`id`, `time_zone_id`, `day_of_week_id`, `price`) VALUES (2, 2, 10, 1500);
+INSERT INTO `cinema`.`tbl_ticket_price` (`id`, `time_zone_id`, `day_of_week_id`, `price`) VALUES (3, 3, 10, 2000);
+INSERT INTO `cinema`.`tbl_ticket_price` (`id`, `time_zone_id`, `day_of_week_id`, `price`) VALUES (4, 4, 10, 2500);
+
+COMMIT;
+
+
+-- -----------------------------------------------------
+-- Data for table `cinema`.`tbl_ticket_booking`
+-- -----------------------------------------------------
+START TRANSACTION;
+USE `cinema`;
+INSERT INTO `cinema`.`tbl_ticket_booking` (`id`, `schedule_id`, `ticket_price_id`, `count`) VALUES (1, 1, 1, 1);
+INSERT INTO `cinema`.`tbl_ticket_booking` (`id`, `schedule_id`, `ticket_price_id`, `count`) VALUES (2, 1, 1, 1);
+INSERT INTO `cinema`.`tbl_ticket_booking` (`id`, `schedule_id`, `ticket_price_id`, `count`) VALUES (3, 1, 1, 1);
+INSERT INTO `cinema`.`tbl_ticket_booking` (`id`, `schedule_id`, `ticket_price_id`, `count`) VALUES (4, 1, 1, 1);
+INSERT INTO `cinema`.`tbl_ticket_booking` (`id`, `schedule_id`, `ticket_price_id`, `count`) VALUES (5, 1, 1, 1);
+INSERT INTO `cinema`.`tbl_ticket_booking` (`id`, `schedule_id`, `ticket_price_id`, `count`) VALUES (6, 1, 1, 1);
+INSERT INTO `cinema`.`tbl_ticket_booking` (`id`, `schedule_id`, `ticket_price_id`, `count`) VALUES (7, 1, 1, 1);
+INSERT INTO `cinema`.`tbl_ticket_booking` (`id`, `schedule_id`, `ticket_price_id`, `count`) VALUES (8, 1, 1, 1);
+INSERT INTO `cinema`.`tbl_ticket_booking` (`id`, `schedule_id`, `ticket_price_id`, `count`) VALUES (9, 1, 1, 1);
+INSERT INTO `cinema`.`tbl_ticket_booking` (`id`, `schedule_id`, `ticket_price_id`, `count`) VALUES (10, 1, 1, 1);
+INSERT INTO `cinema`.`tbl_ticket_booking` (`id`, `schedule_id`, `ticket_price_id`, `count`) VALUES (11, 2, 1, 1);
+INSERT INTO `cinema`.`tbl_ticket_booking` (`id`, `schedule_id`, `ticket_price_id`, `count`) VALUES (12, 2, 1, 1);
+INSERT INTO `cinema`.`tbl_ticket_booking` (`id`, `schedule_id`, `ticket_price_id`, `count`) VALUES (13, 2, 1, 1);
+INSERT INTO `cinema`.`tbl_ticket_booking` (`id`, `schedule_id`, `ticket_price_id`, `count`) VALUES (14, 2, 1, 1);
+INSERT INTO `cinema`.`tbl_ticket_booking` (`id`, `schedule_id`, `ticket_price_id`, `count`) VALUES (15, 2, 1, 1);
+INSERT INTO `cinema`.`tbl_ticket_booking` (`id`, `schedule_id`, `ticket_price_id`, `count`) VALUES (16, 2, 1, 1);
+INSERT INTO `cinema`.`tbl_ticket_booking` (`id`, `schedule_id`, `ticket_price_id`, `count`) VALUES (17, 2, 1, 1);
+INSERT INTO `cinema`.`tbl_ticket_booking` (`id`, `schedule_id`, `ticket_price_id`, `count`) VALUES (18, 2, 1, 1);
+INSERT INTO `cinema`.`tbl_ticket_booking` (`id`, `schedule_id`, `ticket_price_id`, `count`) VALUES (19, 3, 1, 1);
+INSERT INTO `cinema`.`tbl_ticket_booking` (`id`, `schedule_id`, `ticket_price_id`, `count`) VALUES (20, 3, 1, 1);
+INSERT INTO `cinema`.`tbl_ticket_booking` (`id`, `schedule_id`, `ticket_price_id`, `count`) VALUES (21, 3, 1, 1);
+INSERT INTO `cinema`.`tbl_ticket_booking` (`id`, `schedule_id`, `ticket_price_id`, `count`) VALUES (22, 3, 1, 1);
+INSERT INTO `cinema`.`tbl_ticket_booking` (`id`, `schedule_id`, `ticket_price_id`, `count`) VALUES (23, 3, 1, 1);
+INSERT INTO `cinema`.`tbl_ticket_booking` (`id`, `schedule_id`, `ticket_price_id`, `count`) VALUES (24, 3, 1, 1);
+INSERT INTO `cinema`.`tbl_ticket_booking` (`id`, `schedule_id`, `ticket_price_id`, `count`) VALUES (25, 3, 1, 1);
+INSERT INTO `cinema`.`tbl_ticket_booking` (`id`, `schedule_id`, `ticket_price_id`, `count`) VALUES (26, 3, 1, 1);
+INSERT INTO `cinema`.`tbl_ticket_booking` (`id`, `schedule_id`, `ticket_price_id`, `count`) VALUES (27, 3, 1, 1);
+INSERT INTO `cinema`.`tbl_ticket_booking` (`id`, `schedule_id`, `ticket_price_id`, `count`) VALUES (28, 3, 1, 1);
+INSERT INTO `cinema`.`tbl_ticket_booking` (`id`, `schedule_id`, `ticket_price_id`, `count`) VALUES (29, 3, 1, 1);
+INSERT INTO `cinema`.`tbl_ticket_booking` (`id`, `schedule_id`, `ticket_price_id`, `count`) VALUES (30, 3, 1, 1);
+INSERT INTO `cinema`.`tbl_ticket_booking` (`id`, `schedule_id`, `ticket_price_id`, `count`) VALUES (31, 3, 1, 1);
+INSERT INTO `cinema`.`tbl_ticket_booking` (`id`, `schedule_id`, `ticket_price_id`, `count`) VALUES (32, 3, 1, 1);
+INSERT INTO `cinema`.`tbl_ticket_booking` (`id`, `schedule_id`, `ticket_price_id`, `count`) VALUES (33, 4, 2, 1);
+INSERT INTO `cinema`.`tbl_ticket_booking` (`id`, `schedule_id`, `ticket_price_id`, `count`) VALUES (34, 4, 2, 1);
+INSERT INTO `cinema`.`tbl_ticket_booking` (`id`, `schedule_id`, `ticket_price_id`, `count`) VALUES (35, 4, 2, 1);
+INSERT INTO `cinema`.`tbl_ticket_booking` (`id`, `schedule_id`, `ticket_price_id`, `count`) VALUES (36, 4, 2, 1);
+INSERT INTO `cinema`.`tbl_ticket_booking` (`id`, `schedule_id`, `ticket_price_id`, `count`) VALUES (37, 4, 2, 1);
+INSERT INTO `cinema`.`tbl_ticket_booking` (`id`, `schedule_id`, `ticket_price_id`, `count`) VALUES (38, 4, 2, 1);
+INSERT INTO `cinema`.`tbl_ticket_booking` (`id`, `schedule_id`, `ticket_price_id`, `count`) VALUES (39, 4, 2, 1);
+INSERT INTO `cinema`.`tbl_ticket_booking` (`id`, `schedule_id`, `ticket_price_id`, `count`) VALUES (40, 4, 2, 1);
+INSERT INTO `cinema`.`tbl_ticket_booking` (`id`, `schedule_id`, `ticket_price_id`, `count`) VALUES (41, 4, 2, 1);
+INSERT INTO `cinema`.`tbl_ticket_booking` (`id`, `schedule_id`, `ticket_price_id`, `count`) VALUES (42, 4, 2, 1);
+INSERT INTO `cinema`.`tbl_ticket_booking` (`id`, `schedule_id`, `ticket_price_id`, `count`) VALUES (43, 5, 3, 1);
+INSERT INTO `cinema`.`tbl_ticket_booking` (`id`, `schedule_id`, `ticket_price_id`, `count`) VALUES (44, 5, 3, 1);
+INSERT INTO `cinema`.`tbl_ticket_booking` (`id`, `schedule_id`, `ticket_price_id`, `count`) VALUES (45, 5, 3, 1);
+INSERT INTO `cinema`.`tbl_ticket_booking` (`id`, `schedule_id`, `ticket_price_id`, `count`) VALUES (46, 5, 3, 1);
+INSERT INTO `cinema`.`tbl_ticket_booking` (`id`, `schedule_id`, `ticket_price_id`, `count`) VALUES (47, 5, 3, 1);
+INSERT INTO `cinema`.`tbl_ticket_booking` (`id`, `schedule_id`, `ticket_price_id`, `count`) VALUES (48, 5, 3, 1);
+INSERT INTO `cinema`.`tbl_ticket_booking` (`id`, `schedule_id`, `ticket_price_id`, `count`) VALUES (49, 5, 3, 1);
+INSERT INTO `cinema`.`tbl_ticket_booking` (`id`, `schedule_id`, `ticket_price_id`, `count`) VALUES (50, 6, 3, 1);
+INSERT INTO `cinema`.`tbl_ticket_booking` (`id`, `schedule_id`, `ticket_price_id`, `count`) VALUES (51, 6, 3, 1);
+INSERT INTO `cinema`.`tbl_ticket_booking` (`id`, `schedule_id`, `ticket_price_id`, `count`) VALUES (52, 6, 3, 1);
+INSERT INTO `cinema`.`tbl_ticket_booking` (`id`, `schedule_id`, `ticket_price_id`, `count`) VALUES (53, 6, 3, 1);
+INSERT INTO `cinema`.`tbl_ticket_booking` (`id`, `schedule_id`, `ticket_price_id`, `count`) VALUES (54, 6, 3, 1);
+INSERT INTO `cinema`.`tbl_ticket_booking` (`id`, `schedule_id`, `ticket_price_id`, `count`) VALUES (55, 6, 3, 1);
+INSERT INTO `cinema`.`tbl_ticket_booking` (`id`, `schedule_id`, `ticket_price_id`, `count`) VALUES (56, 6, 3, 1);
+INSERT INTO `cinema`.`tbl_ticket_booking` (`id`, `schedule_id`, `ticket_price_id`, `count`) VALUES (57, 6, 3, 1);
+INSERT INTO `cinema`.`tbl_ticket_booking` (`id`, `schedule_id`, `ticket_price_id`, `count`) VALUES (58, 6, 3, 1);
+INSERT INTO `cinema`.`tbl_ticket_booking` (`id`, `schedule_id`, `ticket_price_id`, `count`) VALUES (59, 6, 3, 1);
+INSERT INTO `cinema`.`tbl_ticket_booking` (`id`, `schedule_id`, `ticket_price_id`, `count`) VALUES (60, 6, 3, 1);
+INSERT INTO `cinema`.`tbl_ticket_booking` (`id`, `schedule_id`, `ticket_price_id`, `count`) VALUES (61, 6, 3, 1);
+INSERT INTO `cinema`.`tbl_ticket_booking` (`id`, `schedule_id`, `ticket_price_id`, `count`) VALUES (62, 6, 3, 1);
+INSERT INTO `cinema`.`tbl_ticket_booking` (`id`, `schedule_id`, `ticket_price_id`, `count`) VALUES (63, 7, 4, 1);
+INSERT INTO `cinema`.`tbl_ticket_booking` (`id`, `schedule_id`, `ticket_price_id`, `count`) VALUES (64, 7, 4, 1);
+INSERT INTO `cinema`.`tbl_ticket_booking` (`id`, `schedule_id`, `ticket_price_id`, `count`) VALUES (65, 7, 4, 1);
+INSERT INTO `cinema`.`tbl_ticket_booking` (`id`, `schedule_id`, `ticket_price_id`, `count`) VALUES (66, 7, 4, 1);
+INSERT INTO `cinema`.`tbl_ticket_booking` (`id`, `schedule_id`, `ticket_price_id`, `count`) VALUES (67, 7, 4, 1);
+INSERT INTO `cinema`.`tbl_ticket_booking` (`id`, `schedule_id`, `ticket_price_id`, `count`) VALUES (68, 7, 4, 1);
+INSERT INTO `cinema`.`tbl_ticket_booking` (`id`, `schedule_id`, `ticket_price_id`, `count`) VALUES (69, 7, 4, 1);
+INSERT INTO `cinema`.`tbl_ticket_booking` (`id`, `schedule_id`, `ticket_price_id`, `count`) VALUES (70, 7, 4, 1);
+INSERT INTO `cinema`.`tbl_ticket_booking` (`id`, `schedule_id`, `ticket_price_id`, `count`) VALUES (71, 7, 4, 1);
+INSERT INTO `cinema`.`tbl_ticket_booking` (`id`, `schedule_id`, `ticket_price_id`, `count`) VALUES (72, 7, 4, 1);
+INSERT INTO `cinema`.`tbl_ticket_booking` (`id`, `schedule_id`, `ticket_price_id`, `count`) VALUES (73, 8, 4, 1);
+INSERT INTO `cinema`.`tbl_ticket_booking` (`id`, `schedule_id`, `ticket_price_id`, `count`) VALUES (74, 8, 4, 1);
+INSERT INTO `cinema`.`tbl_ticket_booking` (`id`, `schedule_id`, `ticket_price_id`, `count`) VALUES (75, 8, 4, 1);
+INSERT INTO `cinema`.`tbl_ticket_booking` (`id`, `schedule_id`, `ticket_price_id`, `count`) VALUES (76, 8, 4, 1);
+INSERT INTO `cinema`.`tbl_ticket_booking` (`id`, `schedule_id`, `ticket_price_id`, `count`) VALUES (77, 8, 4, 1);
+INSERT INTO `cinema`.`tbl_ticket_booking` (`id`, `schedule_id`, `ticket_price_id`, `count`) VALUES (78, 8, 4, 1);
+
+COMMIT;
+
