@@ -1,0 +1,16 @@
+-- By Alexander Kramarenko
+-- Interiew Preparation Course
+-- Lesson 4 HW
+-- Task 1
+CREATE VIEW `task1` AS
+SELECT m.title AS 'Фильм 1', ms.time_start AS 'Время начала 1', nd.duration AS 'Длительность 1', 
+m2.title AS 'Фильм 2', ms2.time_start AS 'Время начала 2', nd2.duration  AS 'Длительность 2'
+FROM tbl_schedule ms 
+LEFT JOIN tbl_movie_info m ON ms.movie_id = m.id
+LEFT JOIN tbl_normalized_duration nd ON nd.id = m.normalized_duration_id,
+		   tbl_schedule ms2
+LEFT JOIN tbl_movie_info m2 ON ms2.movie_id = m2.id
+LEFT JOIN tbl_normalized_duration nd2 ON nd2.id = m2.normalized_duration_id
+WHERE ms.id != ms2.id
+AND ms2.time_start BETWEEN ms.time_start AND ms.time_start + nd.duration
+ORDER BY ms.time_start + nd.duration - ms2.time_start;
