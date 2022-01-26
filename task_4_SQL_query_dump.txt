@@ -1,0 +1,16 @@
+-- By Alexander Kramarenko
+-- Interiew Preparation Course
+-- Lesson 4 HW
+-- Task 4
+CREATE VIEW `task4` AS
+SELECT DISTINCT 
+tbl_time_zone.start AS 'Зона начало',
+tbl_time_zone.end AS 'Зона конец',
+(SELECT count(tbl_ticket_booking.id)) AS 'Зрители',
+(SELECT sum(tbl_ticket_price.price) ) AS 'Сумма сборов'
+FROM tbl_schedule, tbl_movie_info,  tbl_ticket_booking, tbl_ticket_price, tbl_time_zone
+WHERE tbl_schedule.id = tbl_ticket_booking.schedule_id
+AND tbl_schedule.movie_id = tbl_movie_info.id
+AND tbl_ticket_booking.ticket_price_id = tbl_ticket_price.id
+AND tbl_time_zone.id = tbl_ticket_price.time_zone_id
+group by tbl_time_zone.id;
